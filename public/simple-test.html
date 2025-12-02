@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Button Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            display: block;
+            width: 100%;
+        }
+
+        .test-button:hover {
+            background: #0056b3;
+        }
+
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            min-height: 100px;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Minimal JavaScript Test</h1>
+    <p>This page tests if JavaScript is executing at all.</p>
+
+    <button class="test-button" onclick="test1()">Test 1: Inline onclick</button>
+    <button class="test-button" id="test2">Test 2: addEventListener</button>
+    <button class="test-button" id="test3">Test 3: Fetch API</button>
+
+    <div id="output">
+        <p>Click buttons above to test...</p>
+    </div>
+
+    <script>
+        // Test 1: Inline onclick (simplest test)
+        function test1() {
+            document.getElementById('output').innerHTML = '<p class="success">✓ Test 1 PASSED: Inline onclick works!</p>';
+            console.log('Test 1: Inline onclick executed');
+        }
+
+        // Test 2: Event listener (common pattern)
+        document.getElementById('test2').addEventListener('click', function () {
+            document.getElementById('output').innerHTML = '<p class="success">✓ Test 2 PASSED: addEventListener works!</p>';
+            console.log('Test 2: addEventListener executed');
+        });
+
+        // Test 3: Fetch API test
+        document.getElementById('test3').addEventListener('click', async function () {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Testing API connection...</p>';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/users/test-id');
+                output.innerHTML = `<p class="success">✓ Test 3 PASSED: Fetch API works!<br>Status: ${response.status}</p>`;
+                console.log('Test 3: Fetch executed, status:', response.status);
+            } catch (error) {
+                output.innerHTML = `<p style="color: red;">✗ Test 3 FAILED: ${error.message}</p>`;
+                console.error('Test 3 error:', error);
+            }
+        });
+
+        // Automatic test on page load
+        window.addEventListener('DOMContentLoaded', function () {
+            console.log('=== DOM Content Loaded ===');
+            console.log('Page loaded successfully');
+            document.getElementById('output').innerHTML += '<p class="success">✓ DOMContentLoaded event fired</p>';
+        });
+    </script>
+</body>
+
+</html>

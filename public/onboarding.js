@@ -102,6 +102,9 @@ function renderOrientationTest() {
     }
 
     function selectAnswer(answer) {
+        // Safety check - prevent processing if already finished
+        if (currentQ >= 3) return;
+
         const q = questions[currentQ];
         const isCorrect = answer == q.correctAnswer;
 
@@ -550,20 +553,39 @@ function displayResults(cognitive, functional, total, risk) {
 
 async function completeOnboarding() {
     try {
-        // Get or create user
+        // Get or create user - with validation
         let user = NeuroAssist.getCurrentUser();
+
+        // Clear invalid demo user if it exists
+        if (user && user.id === 'demo-patient') {
+            console.log('Clearing invalid demo user');
+            NeuroAssist.clearCurrentUser();
+            user = null;
+        }
 
         if (!user) {
             // Create new user
+            const userName = prompt('Please enter your name:') || 'Patient';
             user = await NeuroAssist.api.post('/users', {
-                name: prompt('Please enter your name:') || 'Patient',
+                name: userName,
                 role: 'patient'
             });
+            console.log('Created new user:', user);
             NeuroAssist.setCurrentUser(user);
+        }
+
+        // Verify user has valid ID
+        if (!user || !user.id) {
+            throw new Error('Failed to create valid user');
         }
 
         // Submit baseline assessment
         const results = window.baselineResults;
+        if (!results) {
+            throw new Error('Assessment results not found. Please complete all tests.');
+        }
+
+        console.log('Submitting assessment for user:', user.id);
         await NeuroAssist.api.post('/baseline-assessment', {
             userId: user.id,
             cognitiveScore: results.cognitiveScore,

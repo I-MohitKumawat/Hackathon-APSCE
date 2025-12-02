@@ -3,16 +3,16 @@
   --primary-blue: #2563eb;
   --primary-blue-light: #60a5fa;
   --primary-blue-dark: #1e40af;
-  
+
   --success-green: #10b981;
   --success-green-light: #6ee7b7;
-  
+
   --warning-amber: #f59e0b;
   --warning-amber-light: #fcd34d;
-  
+
   --danger-red: #ef4444;
   --danger-red-light: #fca5a5;
-  
+
   --neutral-50: #f9fafb;
   --neutral-100: #f3f4f6;
   --neutral-200: #e5e7eb;
@@ -23,42 +23,63 @@
   --neutral-700: #374151;
   --neutral-800: #1f2937;
   --neutral-900: #111827;
-  
+
   /* Typography */
   --font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
-  
+  --font-size-xs: 0.75rem;
+  /* 12px */
+  --font-size-sm: 0.875rem;
+  /* 14px */
+  --font-size-base: 1rem;
+  /* 16px */
+  --font-size-lg: 1.125rem;
+  /* 18px */
+  --font-size-xl: 1.25rem;
+  /* 20px */
+  --font-size-2xl: 1.5rem;
+  /* 24px */
+  --font-size-3xl: 1.875rem;
+  /* 30px */
+  --font-size-4xl: 2.25rem;
+  /* 36px */
+
   /* Spacing */
-  --spacing-1: 0.25rem;   /* 4px */
-  --spacing-2: 0.5rem;    /* 8px */
-  --spacing-3: 0.75rem;   /* 12px */
-  --spacing-4: 1rem;      /* 16px */
-  --spacing-5: 1.25rem;   /* 20px */
-  --spacing-6: 1.5rem;    /* 24px */
-  --spacing-8: 2rem;      /* 32px */
-  --spacing-10: 2.5rem;   /* 40px */
-  --spacing-12: 3rem;     /* 48px */
-  
+  --spacing-1: 0.25rem;
+  /* 4px */
+  --spacing-2: 0.5rem;
+  /* 8px */
+  --spacing-3: 0.75rem;
+  /* 12px */
+  --spacing-4: 1rem;
+  /* 16px */
+  --spacing-5: 1.25rem;
+  /* 20px */
+  --spacing-6: 1.5rem;
+  /* 24px */
+  --spacing-8: 2rem;
+  /* 32px */
+  --spacing-10: 2.5rem;
+  /* 40px */
+  --spacing-12: 3rem;
+  /* 48px */
+
   /* Border Radius */
-  --radius-sm: 0.375rem;  /* 6px */
-  --radius-md: 0.5rem;    /* 8px */
-  --radius-lg: 0.75rem;   /* 12px */
-  --radius-xl: 1rem;      /* 16px */
+  --radius-sm: 0.375rem;
+  /* 6px */
+  --radius-md: 0.5rem;
+  /* 8px */
+  --radius-lg: 0.75rem;
+  /* 12px */
+  --radius-xl: 1rem;
+  /* 16px */
   --radius-full: 9999px;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  
+
   /* Transitions */
   --transition-fast: 150ms ease-in-out;
   --transition-base: 200ms ease-in-out;
@@ -83,18 +104,40 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
   line-height: 1.2;
   margin-bottom: var(--spacing-4);
 }
 
-h1 { font-size: var(--font-size-4xl); }
-h2 { font-size: var(--font-size-3xl); }
-h3 { font-size: var(--font-size-2xl); }
-h4 { font-size: var(--font-size-xl); }
-h5 { font-size: var(--font-size-lg); }
-h6 { font-size: var(--font-size-base); }
+h1 {
+  font-size: var(--font-size-4xl);
+}
+
+h2 {
+  font-size: var(--font-size-3xl);
+}
+
+h3 {
+  font-size: var(--font-size-2xl);
+}
+
+h4 {
+  font-size: var(--font-size-xl);
+}
+
+h5 {
+  font-size: var(--font-size-lg);
+}
+
+h6 {
+  font-size: var(--font-size-base);
+}
 
 p {
   margin-bottom: var(--spacing-4);
@@ -127,27 +170,65 @@ p {
   justify-content: space-between;
 }
 
-.gap-2 { gap: var(--spacing-2); }
-.gap-3 { gap: var(--spacing-3); }
-.gap-4 { gap: var(--spacing-4); }
-.gap-6 { gap: var(--spacing-6); }
+.gap-2 {
+  gap: var(--spacing-2);
+}
+
+.gap-3 {
+  gap: var(--spacing-3);
+}
+
+.gap-4 {
+  gap: var(--spacing-4);
+}
+
+.gap-6 {
+  gap: var(--spacing-6);
+}
 
 .text-center {
   text-align: center;
 }
 
-.text-sm { font-size: var(--font-size-sm); }
-.text-lg { font-size: var(--font-size-lg); }
-.text-xl { font-size: var(--font-size-xl); }
-.text-2xl { font-size: var(--font-size-2xl); }
+.text-sm {
+  font-size: var(--font-size-sm);
+}
 
-.font-medium { font-weight: 500; }
-.font-semibold { font-weight: 600; }
-.font-bold { font-weight: 700; }
+.text-lg {
+  font-size: var(--font-size-lg);
+}
 
-.text-neutral-500 { color: var(--neutral-500); }
-.text-neutral-600 { color: var(--neutral-600); }
-.text-neutral-700 { color: var(--neutral-700); }
+.text-xl {
+  font-size: var(--font-size-xl);
+}
+
+.text-2xl {
+  font-size: var(--font-size-2xl);
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-neutral-500 {
+  color: var(--neutral-500);
+}
+
+.text-neutral-600 {
+  color: var(--neutral-600);
+}
+
+.text-neutral-700 {
+  color: var(--neutral-700);
+}
 
 /* Button Styles */
 .btn {
@@ -269,7 +350,9 @@ p {
 }
 
 /* Form Elements */
-input, select, textarea {
+input,
+select,
+textarea {
   width: 100%;
   padding: var(--spacing-3);
   font-size: var(--font-size-base);
@@ -279,7 +362,9 @@ input, select, textarea {
   font-family: var(--font-family);
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -298,6 +383,7 @@ label {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -309,6 +395,7 @@ label {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -316,9 +403,12 @@ label {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -328,9 +418,11 @@ label {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -393,12 +485,333 @@ label {
   .container {
     padding: 0 var(--spacing-4);
   }
-  
-  h1 { font-size: var(--font-size-3xl); }
-  h2 { font-size: var(--font-size-2xl); }
-  
+
+  h1 {
+    font-size: var(--font-size-3xl);
+  }
+
+  h2 {
+    font-size: var(--font-size-2xl);
+  }
+
   .btn-large {
     min-height: 60px;
     font-size: var(--font-size-lg);
   }
+}
+
+/* ============================================
+   MOBILE UX IMPROVEMENTS
+   ============================================ */
+
+/* Mobile-first touch targets (44x44px minimum) */
+@media (max-width: 768px) {
+
+  .btn,
+  button {
+    min-height: 48px;
+    font-size: 1.1rem;
+    padding: 0.75rem 1.5rem;
+    touch-action: manipulation;
+    /* Prevent double-tap zoom */
+  }
+
+  .option-btn,
+  .trail-cell,
+  .tea-step {
+    min-width: 60px;
+    min-height: 60px;
+  }
+
+  /* Larger touch-friendly buttons */
+  .btn-xlarge {
+    font-size: 1.5rem;
+    padding: 1.5rem 3rem;
+    min-height: 60px;
+    border-radius: 12px;
+  }
+}
+
+/* Confirmation Modal */
+.confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+.confirmation-modal {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 16px;
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  animation: slideIn 0.3s ease;
+}
+
+.confirmation-message {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: var(--neutral-800);
+  line-height: 1.4;
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Task Progress Indicator */
+.task-progress {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: var(--neutral-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-blue), var(--primary-blue-light));
+  transition: width 0.4s ease;
+  border-radius: var(--radius-full);
+}
+
+.progress-text {
+  text-align: center;
+  color: var(--neutral-600);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Back Button */
+.back-button {
+  margin-bottom: 1.5rem;
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  border: 1px solid var(--neutral-300);
+}
+
+.back-button:hover {
+  background: var(--neutral-200);
+  transform: translateX(-2px);
+}
+
+/* Enhanced Navigation */
+.main-nav {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem;
+  gap: 1rem;
+}
+
+.nav-logo {
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-decoration: none;
+  color: var(--primary-blue);
+  white-space: nowrap;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--neutral-600);
+  font-weight: 500;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  color: var(--primary-blue);
+  background: var(--neutral-100);
+}
+
+.nav-link.active {
+  color: var(--primary-blue);
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-logout {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--neutral-300);
+  border-radius: var(--radius-md);
+  background: white;
+  color: var(--neutral-700);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-logout:hover {
+  background: var(--neutral-100);
+  border-color: var(--neutral-400);
+}
+
+/* Word Selection Interface for Seniors */
+.word-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.word-select-btn {
+  font-size: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  min-width: 140px;
+  min-height: 70px;
+  border: 3px solid var(--neutral-300);
+  border-radius: var(--radius-lg);
+  background: white;
+  color: var(--neutral-800);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+  touch-action: manipulation;
+}
+
+.word-select-btn:hover {
+  border-color: var(--primary-blue);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.word-select-btn.selected {
+  background: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg);
+}
+
+.word-select-btn:active {
+  transform: scale(0.98);
+}
+
+/* Mobile Responsive Navigation */
+@media (max-width: 768px) {
+  .nav-container {
+    flex-wrap: wrap;
+    padding: 0 1rem;
+  }
+
+  .nav-links {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .nav-icon {
+    font-size: 1rem;
+  }
+
+  .nav-user {
+    width: 100%;
+    justify-content: center;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--neutral-200);
+  }
+
+  .word-selection-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .word-select-btn {
+    font-size: 1.1rem;
+    padding: 1rem;
+    min-height: 60px;
+  }
+}
+
+/* Secondary Button Style */
+.btn-secondary {
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  border: 2px solid var(--neutral-300);
+}
+
+.btn-secondary:hover {
+  background: var(--neutral-200);
+  border-color: var(--neutral-400);
+}
+
+/* Prevent text selection on interactive elements */
+.btn,
+.word-select-btn,
+.option-btn,
+.trail-cell,
+.tea-step {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus visible for accessibility */
+.btn:focus-visible,
+.word-select-btn:focus-visible {
+  outline: 3px solid var(--primary-blue);
+  outline-offset: 3px;
 }

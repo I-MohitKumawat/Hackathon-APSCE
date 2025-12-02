@@ -13,11 +13,21 @@ let assessmentData = {
     teaTask: { score: 0, maxScore: 5, errors: 0, sequence: [] }
 };
 
+// Progress tracking
+const TOTAL_STEPS = 4;
+const stepNames = {
+    'step1': 'Orientation Questions',
+    'step2': 'Memory Recall',
+    'step3': 'Number Trail',
+    'step4': 'Tea Making Task'
+};
+
 //================================
 // NAVIGATION
 // ============================================
 
 function startAssessment() {
+    NeuroAssist.showTaskProgress(1, TOTAL_STEPS, stepNames['step1']);
     showStep('step1');
     renderOrientationTest();
 }
@@ -27,6 +37,12 @@ function showStep(stepId) {
         step.classList.remove('active');
     });
     document.getElementById(stepId).classList.add('active');
+
+    // Update progress indicator
+    const stepNum = parseInt(stepId.replace('step', ''));
+    if (stepNum <= TOTAL_STEPS) {
+        NeuroAssist.showTaskProgress(stepNum, TOTAL_STEPS, stepNames[stepId]);
+    }
 }
 
 // ============================================
@@ -195,31 +211,44 @@ function startRecallTest() {
     function showRecallInput() {
         const container = document.getElementById('recallTest');
 
+        // Create distractors (10 words that were NOT shown)
+        const distractorWords = ['Table', 'Window', 'Bridge', 'Lamp', 'Tiger', 'Rainbow', 'Stone', 'Honey', 'Forest', 'Piano'];
+        const allWords = [...selectedWords, ...NeuroAssist.getRandomItems(distractorWords, 10)];
+        const shuffled = NeuroAssist.shuffleArray(allWords);
+
+        let selectedByUser = [];
+
         container.innerHTML = `
       <div class="test-container">
-        <p style="text-align: center; font-size: var(--font-size-lg); margin-bottom: var(--spacing-4);">
-          Type the words you remember:
+        <p style="text-align: center; font-size: 1.5rem; margin-bottom: 2rem; font-weight: 600;">
+          Tap the words you remember
         </p>
-        <div class="recall-inputs" id="recallInputs"></div>
-        <button class="btn btn-primary" id="submitRecall" style="margin-top: var(--spacing-6); width: 100%;">
-          Next →
+        <div class="word-selection-grid" id="wordGrid"></div>
+        <button class="btn btn-primary btn-xlarge" id="submitRecall" style="margin-top: 2rem; width: 100%; max-width: 400px;">
+          Done →
         </button>
       </div>
     `;
 
-        const inputsContainer = document.getElementById('recallInputs');
-        for (let i = 0; i < 5; i++) {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = `Word ${i + 1}`;
-            input.className = 'fade-in';
-            inputsContainer.appendChild(input);
-        }
+        const grid = document.getElementById('wordGrid');
+        shuffled.forEach(word => {
+            const wordBtn = document.createElement('button');
+            wordBtn.className = 'word-select-btn';
+            wordBtn.textContent = word;
+            wordBtn.onclick = NeuroAssist.handleButtonClick(() => {
+                wordBtn.classList.toggle('selected');
+                if (selectedByUser.includes(word)) {
+                    selectedByUser = selectedByUser.filter(w => w !== word);
+                } else {
+                    selectedByUser.push(word);
+                }
+            });
+            grid.appendChild(wordBtn);
+        });
 
-        document.getElementById('submitRecall').onclick = () => {
-            const inputs = document.querySelectorAll('#recallInputs input');
-            const userWords = Array.from(inputs).map(input => input.value.trim().toLowerCase());
+        document.getElementById('submitRecall').onclick = NeuroAssist.handleButtonClick(() => {
             const correctWords = selectedWords.map(w => w.toLowerCase());
+            const userWords = selectedByUser.map(w => w.toLowerCase());
 
             let score = 0;
             userWords.forEach(word => {
@@ -229,9 +258,15 @@ function startRecallTest() {
             assessmentData.recall.score = score;
             assessmentData.recall.userAnswers = userWords;
 
-            showStep('step3');
-            startTrailTest();
-        };
+            // Show confirmation before moving to next test
+            NeuroAssist.showConfirmation(
+                'Ready for the next test?',
+                () => {
+                    showStep('step3');
+                    startTrailTest();
+                }
+            );
+        });
     }
 }
 
@@ -303,10 +338,13 @@ function startTrailTest() {
         assessmentData.trail.time = timeTaken;
         assessmentData.trail.errors = errors;
 
-        setTimeout(() => {
-            showStep('step4');
-            startTeaTask();
-        }, 1000);
+        NeuroAssist.showConfirmation(
+            'Well done! Ready for the final task?',
+            () => {
+                showStep('step4');
+                startTeaTask();
+            }
+        );
     }
 }
 

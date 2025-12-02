@@ -337,7 +337,10 @@ window.NeuroAssist = {
     clearElement,
     debounce,
     drawLineChart,
-    createNavigation
+    createNavigation,
+    showConfirmation,
+    showTaskProgress,
+    handleButtonClick
 };
 console.log('common.js execution completed. NeuroAssist object:', window.NeuroAssist);
 
@@ -346,37 +349,30 @@ console.log('common.js execution completed. NeuroAssist object:', window.NeuroAs
 // ============================================
 
 function createNavigation() {
+    const currentPage = window.location.pathname;
     const nav = document.createElement('nav');
     nav.className = 'main-nav';
     nav.innerHTML = `
         <div class="nav-container">
             <a href="/" class="nav-logo">🧠 NeuroAssist</a>
             <div class="nav-links">
-                <a href="/patient.html" class="nav-link ${window.location.pathname.includes('patient') ? 'active' : ''}">Patient View</a>
-                <a href="/dashboard.html" class="nav-link ${window.location.pathname.includes('dashboard') ? 'active' : ''}">Caregiver Dashboard</a>
-                <a href="/onboarding.html" class="nav-link ${window.location.pathname.includes('onboarding') ? 'active' : ''}">Assessment</a>
+                <a href="/" class="nav-link ${currentPage === '/' || currentPage === '/index.html' ? 'active' : ''}">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
+                <a href="/patient.html" class="nav-link ${currentPage.includes('patient') ? 'active' : ''}">
+                    <span class="nav-icon">👤</span> Daily Tasks
+                </a>
+                <a href="/dashboard.html" class="nav-link ${currentPage.includes('dashboard') ? 'active' : ''}">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
             </div>
             <div class="nav-user">
                 <span id="navUserName"></span>
-                <button onclick="NeuroAssist.clearCurrentUser(); window.location.href='/';" class="btn-logout">Logout</button>
+                <button onclick="logout()" class="btn-logout">Exit</button>
             </div>
         </div>
     `;
 
-    // Add styles dynamically
-    const style = document.createElement('style');
-    style.textContent = `
-        .main-nav { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1rem 0; margin-bottom: 2rem; }
-        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1rem; }
-        .nav-logo { font-weight: bold; font-size: 1.5rem; text-decoration: none; color: var(--primary-blue); }
-        .nav-links { display: flex; gap: 2rem; }
-        .nav-link { text-decoration: none; color: var(--neutral-600); font-weight: 500; transition: color 0.2s; }
-        .nav-link:hover, .nav-link.active { color: var(--primary-blue); }
-        .nav-user { display: flex; align-items: center; gap: 1rem; }
-        .btn-logout { padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; }
-        .btn-logout:hover { background: #f5f5f5; }
-    `;
-    document.head.appendChild(style);
     document.body.insertBefore(nav, document.body.firstChild);
 
     // Set user name
@@ -386,7 +382,94 @@ function createNavigation() {
     }
 }
 
+function logout() {
+    if (confirm('Are you sure you want to exit?')) {
+        NeuroAssist.clearCurrentUser();
+        window.location.href = '/';
+    }
+}
+
 // Auto-init navigation on main pages
 if (['/patient.html', '/dashboard.html', '/baseline-report.html'].some(p => window.location.pathname.includes(p))) {
     document.addEventListener('DOMContentLoaded', createNavigation);
 }
+
+// ============================================
+// CONFIRMATION MODAL
+// ============================================
+
+function showConfirmation(message = "Ready to continue?", onConfirm, onCancel) {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirmation-overlay';
+    overlay.innerHTML = `
+        <div class="confirmation-modal">
+            <p class="confirmation-message">${message}</p>
+            <div class="confirmation-buttons">
+                <button class="btn btn-primary btn-large" id="confirmYes">
+                    Yes, Continue →
+                </button>
+                ${onCancel ? '<button class="btn btn-secondary" id="confirmNo">Go Back</button>' : ''}
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById('confirmYes').onclick = () => {
+        overlay.remove();
+        if (onConfirm) onConfirm();
+    };
+
+    if (onCancel) {
+        document.getElementById('confirmNo').onclick = () => {
+            overlay.remove();
+            if (onCancel) onCancel();
+        };
+    }
+}
+
+// ============================================
+// TASK PROGRESS INDICATOR
+// ============================================
+
+function showTaskProgress(currentStep, totalSteps, stepName) {
+    const existing = document.getElementById('taskProgress');
+    if (existing) existing.remove();
+
+    const progress = document.createElement('div');
+    progress.id = 'taskProgress';
+    progress.className = 'task-progress';
+    progress.innerHTML = `
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: ${(currentStep / totalSteps) * 100}%"></div>
+        </div>
+        <p class="progress-text">Step ${currentStep} of ${totalSteps}: ${stepName}</p>
+    `;
+
+    const container = document.querySelector('.container');
+    if (container) {
+        container.insertBefore(progress, container.firstChild);
+    }
+}
+
+// ============================================
+// TOUCH EVENT FIX - PREVENT DOUBLE TAPS
+// ============================================
+
+function handleButtonClick(callback, delay = 300) {
+    let isProcessing = false;
+
+    return function (...args) {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        callback.apply(this, args);
+
+        setTimeout(() => {
+            isProcessing = false;
+        }, delay);
+    };
+}
+
+// Make logout globally accessible
+window.logout = logout;

@@ -336,6 +336,57 @@ window.NeuroAssist = {
     createElement,
     clearElement,
     debounce,
-    drawLineChart
+    drawLineChart,
+    createNavigation
 };
 console.log('common.js execution completed. NeuroAssist object:', window.NeuroAssist);
+
+// ============================================
+// SHARED NAVIGATION
+// ============================================
+
+function createNavigation() {
+    const nav = document.createElement('nav');
+    nav.className = 'main-nav';
+    nav.innerHTML = `
+        <div class="nav-container">
+            <a href="/" class="nav-logo">🧠 NeuroAssist</a>
+            <div class="nav-links">
+                <a href="/patient.html" class="nav-link ${window.location.pathname.includes('patient') ? 'active' : ''}">Patient View</a>
+                <a href="/dashboard.html" class="nav-link ${window.location.pathname.includes('dashboard') ? 'active' : ''}">Caregiver Dashboard</a>
+                <a href="/onboarding.html" class="nav-link ${window.location.pathname.includes('onboarding') ? 'active' : ''}">Assessment</a>
+            </div>
+            <div class="nav-user">
+                <span id="navUserName"></span>
+                <button onclick="NeuroAssist.clearCurrentUser(); window.location.href='/';" class="btn-logout">Logout</button>
+            </div>
+        </div>
+    `;
+
+    // Add styles dynamically
+    const style = document.createElement('style');
+    style.textContent = `
+        .main-nav { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1rem 0; margin-bottom: 2rem; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1rem; }
+        .nav-logo { font-weight: bold; font-size: 1.5rem; text-decoration: none; color: var(--primary-blue); }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-link { text-decoration: none; color: var(--neutral-600); font-weight: 500; transition: color 0.2s; }
+        .nav-link:hover, .nav-link.active { color: var(--primary-blue); }
+        .nav-user { display: flex; align-items: center; gap: 1rem; }
+        .btn-logout { padding: 0.5rem 1rem; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; }
+        .btn-logout:hover { background: #f5f5f5; }
+    `;
+    document.head.appendChild(style);
+    document.body.insertBefore(nav, document.body.firstChild);
+
+    // Set user name
+    const user = NeuroAssist.getCurrentUser();
+    if (user) {
+        document.getElementById('navUserName').textContent = user.name;
+    }
+}
+
+// Auto-init navigation on main pages
+if (['/patient.html', '/dashboard.html', '/baseline-report.html'].some(p => window.location.pathname.includes(p))) {
+    document.addEventListener('DOMContentLoaded', createNavigation);
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Debug NeuroAssist Loading</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        .log {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .error {
+            color: red;
+            background: #fee;
+        }
+
+        .success {
+            color: green;
+            background: #efe;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Debug NeuroAssist Loading</h1>
+    <div id="logs"></div>
+
+    <script>
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
+            document.getElementById('logs').appendChild(div);
+            console.log(msg);
+        }
+
+        window.onerror = function (msg, url, line) {
+            log(`Global Error: ${msg} at ${url}:${line}`, 'error');
+            return false;
+        };
+
+        log('Starting debug page...');
+    </script>
+
+    <!-- Load common.js with cache busting -->
+    <script src="common.js?v=debug1"></script>
+
+    <script>
+        log('Script tags processed.');
+
+        if (typeof NeuroAssist === 'undefined') {
+            log('FAIL: NeuroAssist is undefined!', 'error');
+        } else {
+            log('SUCCESS: NeuroAssist is defined.', 'success');
+            log('Keys: ' + Object.keys(NeuroAssist).join(', '));
+
+            // Test API object
+            if (NeuroAssist.api) {
+                log('API object found.', 'success');
+            } else {
+                log('FAIL: NeuroAssist.api is missing', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

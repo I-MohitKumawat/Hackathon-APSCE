@@ -3,27 +3,64 @@
  * Handles routine logging, cognitive tests, games, and functional tasks
  */
 
-const { api, showToast, getCurrentUser, shuffleArray, getRandomItems } = NeuroAssist;
+console.log('patient.js loading...');
+console.log('NeuroAssist available?', typeof NeuroAssist !== 'undefined');
+
+// const { api, showToast, ... } = NeuroAssist; // REMOVED to avoid collisions
 
 let currentUser = null;
 let currentTest = null;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    currentUser = getCurrentUser();
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOMContentLoaded fired in patient.js');
+    currentUser = NeuroAssist.getCurrentUser();
 
-    if (!currentUser) {
-        // Create demo user
-        currentUser = { id: 'demo-patient', name: 'John Doe' };
-        NeuroAssist.setCurrentUser(currentUser);
+    // Force clear invalid demo user from previous sessions
+    if (currentUser && currentUser.id === 'demo-patient') {
+        console.log('Detected invalid demo user, clearing...');
+        NeuroAssist.clearCurrentUser();
+        currentUser = null;
     }
 
+    if (!currentUser) {
+        // Create demo user via API to ensure it exists in DB
+        try {
+            console.log('Creating new demo user...');
+            currentUser = await NeuroAssist.api.post('/users', {
+                name: 'John Doe',
+                role: 'patient'
+            });
+            NeuroAssist.setCurrentUser(currentUser);
+            console.log('Created user:', currentUser);
+        } catch (error) {
+            console.error('Error creating demo user:', error);
+            // Fallback only if API fails
+            currentUser = { id: 'demo-patient', name: 'John Doe' };
+        }
+    } else {
+        // Verify user exists in DB
+        try {
+            // We don't have a specific check endpoint, but we can try to get dashboard data
+            // If that fails with 404/500, we might need to recreate the user
+            console.log('Verifying existing user:', currentUser);
+        } catch (e) {
+            console.warn('User verification warning:', e);
+        }
+    }
+
+    console.log('Current user:', currentUser);
     document.getElementById('patientName').textContent = currentUser.name;
 
+    console.log('Setting up routine buttons...');
     setupRoutineButtons();
+    console.log('Setting up mood buttons...');
     setupMoodButtons();
+    console.log('Setting up test cards...');
     setupTestCards();
+    console.log('Setting up games...');
     setupGames();
+    console.log('Patient.js initialization complete!');
 });
 
 // ============================================
@@ -32,20 +69,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function setupRoutineButtons() {
     const routineButtons = document.querySelectorAll('.routine-btn');
+    console.log('Found routine buttons:', routineButtons.length);
 
     routineButtons.forEach(btn => {
         btn.addEventListener('click', async () => {
             const activity = btn.dataset.activity;
+            console.log('Routine button clicked:', activity);
 
             try {
-                await api.post('/routine-log', {
+                await NeuroAssist.api.post('/routine-log', {
                     userId: currentUser.id,
                     activity: activity,
                     value: 1
                 });
 
                 btn.classList.add('completed');
-                showToast(`✓ ${activity.charAt(0).toUpperCase() + activity.slice(1)} logged!`, 'success');
+                NeuroAssist.showToast(`✓ ${activity.charAt(0).toUpperCase() + activity.slice(1)} logged!`, 'success');
 
                 // Remove completed state after 2 seconds for repeated logging
                 setTimeout(() => btn.classList.remove('completed'), 2000);
@@ -54,6 +93,7 @@ function setupRoutineButtons() {
             }
         });
     });
+    console.log('Routine button listeners attached');
 }
 
 function setupMoodButtons() {
@@ -68,13 +108,13 @@ function setupMoodButtons() {
             btn.classList.add('selected');
 
             try {
-                await api.post('/routine-log', {
+                await NeuroAssist.api.post('/routine-log', {
                     userId: currentUser.id,
                     activity: 'mood',
                     mood: mood
                 });
 
-                showToast(`Mood recorded: ${mood}`, 'success');
+                NeuroAssist.showToast(`Mood recorded: ${mood}`, 'success');
             } catch (error) {
                 console.error('Error logging mood:', error);
             }
@@ -123,7 +163,7 @@ function startOrientationTest() {
         {
             question: "What day of the week is it?",
             correctAnswer: correctDay,
-            options: shuffleArray(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+            options: NeuroAssist.shuffleArray(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
         },
         {
             question: "Where are you right now?",
@@ -198,7 +238,7 @@ function startOrientationTest() {
 
         // Submit results
         try {
-            await api.post('/cognitive-test', {
+            await NeuroAssist.api.post('/cognitive-test', {
                 userId: currentUser.id,
                 testType: 'orientation',
                 score: score,
@@ -219,7 +259,7 @@ function generateDateOptions(correctDate) {
             options.push(randomDate);
         }
     }
-    return shuffleArray(options);
+    return NeuroAssist.shuffleArray(options);
 }
 
 // ============================================
@@ -228,7 +268,7 @@ function generateDateOptions(correctDate) {
 
 function startRecallTest() {
     const wordBank = ['Apple', 'Chair', 'Ocean', 'Book', 'Smile', 'Garden', 'Music', 'Cloud', 'River', 'Mountain', 'Coffee', 'Window', 'Star', 'Flower', 'Bridge'];
-    const selectedWords = getRandomItems(wordBank, 5);
+    const selectedWords = NeuroAssist.getRandomItems(wordBank, 5);
 
     let phase = 'display'; // display, distraction, recall
     let timer = 10;
@@ -348,7 +388,7 @@ function startRecallTest() {
 
         // Submit results
         try {
-            await api.post('/cognitive-test', {
+            await NeuroAssist.api.post('/cognitive-test', {
                 userId: currentUser.id,
                 testType: 'recall',
                 score: score,
@@ -366,7 +406,7 @@ function startRecallTest() {
 // ============================================
 
 function startTrailTest() {
-    const numbers = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    const numbers = NeuroAssist.shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     let expectedNumber = 1;
     let errors = 0;
     let startTime = Date.now();
@@ -441,7 +481,7 @@ function startTrailTest() {
 
         // Submit results
         try {
-            await api.post('/cognitive-test', {
+            await NeuroAssist.api.post('/cognitive-test', {
                 userId: currentUser.id,
                 testType: 'trail-making',
                 score: score,
@@ -466,7 +506,7 @@ function setupGames() {
 
 function startMatchingGame() {
     const icons = ['🍎', '🚗', '⭐', '🌸', '🎵', '🏠'];
-    const cards = shuffleArray([...icons, ...icons]);
+    const cards = NeuroAssist.shuffleArray([...icons, ...icons]);
 
     let flippedCards = [];
     let matchedPairs = 0;
@@ -555,7 +595,7 @@ function startMatchingGame() {
       </div>
     `;
 
-        showToast('All pairs matched! 🎉', 'success');
+        NeuroAssist.showToast('All pairs matched! 🎉', 'success');
     }
 }
 
@@ -628,7 +668,7 @@ function startTeaTask() {
             stepDiv.classList.add('error');
 
             setTimeout(() => stepDiv.classList.remove('error'), 500);
-            showToast('Wrong step! Try again.', 'error');
+            NeuroAssist.showToast('Wrong step! Try again.', 'error');
         }
     }
 
@@ -652,7 +692,7 @@ function startTeaTask() {
 
         // Submit results
         try {
-            await api.post('/functional-task', {
+            await NeuroAssist.api.post('/functional-task', {
                 userId: currentUser.id,
                 taskType: 'make-tea',
                 completed: true,

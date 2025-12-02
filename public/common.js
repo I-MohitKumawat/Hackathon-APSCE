@@ -1,6 +1,7 @@
 /**
  * Common JavaScript Utilities for NeuroAssist
  */
+console.log('Attempting to load common.js...');
 
 // API Configuration
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -337,3 +338,4 @@ window.NeuroAssist = {
     debounce,
     drawLineChart
 };
+console.log('common.js execution completed. NeuroAssist object:', window.NeuroAssist);

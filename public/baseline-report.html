@@ -153,77 +153,64 @@
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: var(--spacing-8);">
-            <a href="/patient.html" class="btn btn-primary">Go to Patient Interface</a>
-            <a href="/dashboard.html" class="btn btn-outline" style="margin-left: var(--spacing-4);">View Dashboard</a>
-        </div>
-    </div>
+        if (!user) {
+        window.location.href = '/onboarding.html';
+        return;
+        }
 
-    <script src="common.js"></script>
-    <script>
-        const { api, formatDate, getCurrentUser } = NeuroAssist;
+        // Load baseline assessment
+        const report = await api.get(`/baseline-report/${user.id}`);
 
-        async function loadReport() {
-            try {
-                const user = getCurrentUser();
-                if (!user) {
-                    window.location.href = '/onboarding.html';
-                    return;
-                }
+        // Display user info
+        document.getElementById('patientName').textContent = user.name;
+        document.getElementById('assessmentDate').textContent = `Assessed on ${formatDate(report.baseline.timestamp)}`;
 
-                // Load baseline assessment
-                const report = await api.get(`/baseline-report/${user.id}`);
+        // Display scores
+        document.getElementById('totalScore').textContent = report.baseline.total_score;
+        document.getElementById('cognitiveScore').textContent = report.baseline.cognitive_score;
+        document.getElementById('functionalScore').textContent = report.baseline.functional_score;
 
-                // Display user info
-                document.getElementById('patientName').textContent = user.name;
-                document.getElementById('assessmentDate').textContent = `Assessed on ${formatDate(report.baseline.timestamp)}`;
+        // Display components
+        const components = JSON.parse(report.baseline.components);
+        document.getElementById('orientationScore').textContent = `${components.orientation || 0} / 3`;
+        document.getElementById('recallScore').textContent = `${components.recall || 0} / 5`;
+        document.getElementById('trailScore').textContent = `${components.trail || 0} / 2`;
+        document.getElementById('teaScore').textContent = `${components.teaTask || 0} / 5`;
 
-                // Display scores
-                document.getElementById('totalScore').textContent = report.baseline.total_score;
-                document.getElementById('cognitiveScore').textContent = report.baseline.cognitive_score;
-                document.getElementById('functionalScore').textContent = report.baseline.functional_score;
+        // Display risk level
+        const riskBadge = document.getElementById('riskLevel');
+        const risk = report.baseline.risk_level;
+        riskBadge.className = `status-badge status-${risk === 'normal' ? 'green' : risk === 'mild' ? 'amber' : 'red'}`;
 
-                // Display components
-                const components = JSON.parse(report.baseline.components);
-                document.getElementById('orientationScore').textContent = `${components.orientation || 0} / 3`;
-                document.getElementById('recallScore').textContent = `${components.recall || 0} / 5`;
-                document.getElementById('trailScore').textContent = `${components.trail || 0} / 2`;
-                document.getElementById('teaScore').textContent = `${components.teaTask || 0} / 5`;
+        if (risk === 'normal') {
+        riskBadge.innerHTML = '<span class="status-dot"></span> Normal - No Impairment Detected';
+        } else if (risk === 'mild') {
+        riskBadge.innerHTML = '<span class="status-dot"></span> Mild Concern - Monitor Closely';
+        } else {
+        riskBadge.innerHTML = '<span class="status-dot"></span> High Priority - Consultation Recommended';
+        }
 
-                // Display risk level
-                const riskBadge = document.getElementById('riskLevel');
-                const risk = report.baseline.risk_level;
-                riskBadge.className = `status-badge status-${risk === 'normal' ? 'green' : risk === 'mild' ? 'amber' : 'red'}`;
+        // Display interpretation
+        document.getElementById('interpretation').innerHTML = `<p>${report.interpretation}</p>`;
 
-                if (risk === 'normal') {
-                    riskBadge.innerHTML = '<span class="status-dot"></span> Normal - No Impairment Detected';
-                } else if (risk === 'mild') {
-                    riskBadge.innerHTML = '<span class="status-dot"></span> Mild Concern - Monitor Closely';
-                } else {
-                    riskBadge.innerHTML = '<span class="status-dot"></span> High Priority - Consultation Recommended';
-                }
+        // Display recommendations
+        const recList = document.getElementById('recommendationsList');
+        report.recommendations.forEach(rec => {
+        const li = document.createElement('li');
+        li.textContent = rec;
+        recList.appendChild(li);
+        });
 
-                // Display interpretation
-                document.getElementById('interpretation').innerHTML = `<p>${report.interpretation}</p>`;
-
-                // Display recommendations
-                const recList = document.getElementById('recommendationsList');
-                report.recommendations.forEach(rec => {
-                    const li = document.createElement('li');
-                    li.textContent = rec;
-                    recList.appendChild(li);
-                });
-
-            } catch (error) {
-                console.error('Error loading report:', error);
-                if (error.message.includes('No baseline assessment')) {
-                    window.location.href = '/onboarding.html';
-                }
-            }
+        } catch (error) {
+        console.error('Error loading report:', error);
+        if (error.message.includes('No baseline assessment')) {
+        window.location.href = '/onboarding.html';
+        }
+        }
         }
 
         loadReport();
-    </script>
+        </script>
 </body>
 
 </html>

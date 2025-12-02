@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Interface - NeuroAssist</title>
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="patient.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>👋 Hello, <span id="patientName">Patient</span></h1>
+      <p class="header-subtitle">Track your daily activities and complete wellness checks</p>
+    </header>
+
+    <!-- Daily Routine Tracker -->
+    <section class="section">
+      <h2 class="section-title">📋 Daily Activities</h2>
+      <div class="routine-grid">
+        <button class="routine-btn" data-activity="medication">
+          <span class="routine-icon">💊</span>
+          <span class="routine-label">Medication</span>
+        </button>
+        <button class="routine-btn" data-activity="breakfast">
+          <span class="routine-icon">🍳</span>
+          <span class="routine-label">Breakfast</span>
+        </button>
+        <button class="routine-btn" data-activity="lunch">
+          <span class="routine-icon">🍽️</span>
+          <span class="routine-label">Lunch</span>
+        </button>
+        <button class="routine-btn" data-activity="dinner">
+          <span class="routine-icon">🍲</span>
+          <span class="routine-label">Dinner</span>
+        </button>
+        <button class="routine-btn" data-activity="water">
+          <span class="routine-icon">💧</span>
+          <span class="routine-label">Water (Glass)</span>
+        </button>
+        <button class="routine-btn" data-activity="sleep">
+          <span class="routine-icon">😴</span>
+          <span class="routine-label">Sleep</span>
+        </button>
+      </div>
+
+      <div class="mood-section">
+        <h3 class="mood-title">How are you feeling today?</h3>
+        <div class="mood-buttons">
+          <button class="mood-btn" data-mood="happy">
+            <span class="mood-icon">😊</span>
+            <span>Happy</span>
+          </button>
+          <button class="mood-btn" data-mood="normal">
+            <span class="mood-icon">😐</span>
+            <span>Normal</span>
+          </button>
+          <button class="mood-btn" data-mood="confused">
+            <span class="mood-icon">😕</span>
+            <span>Confused</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cognitive Tests -->
+    <section class="section">
+      <h2 class="section-title">🧠 Wellness Checks</h2>
+      <div class="test-cards">
+        <div class="test-card" data-test="orientation">
+          <div class="test-icon">📅</div>
+          <h3 class="test-title">Orientation Check</h3>
+          <p class="test-desc">Answer 3 simple questions</p>
+          <button class="btn btn-primary">Start Test</button>
+        </div>
+
+        <div class="test-card" data-test="recall">
+          <div class="test-icon">🧩</div>
+          <h3 class="test-title">Memory Recall</h3>
+          <p class="test-desc">Remember 5 words</p>
+          <button class="btn btn-primary">Start Test</button>
+        </div>
+
+        <div class="test-card" data-test="trail">
+          <div class="test-icon">🔢</div>
+          <h3 class="test-title">Number Trail</h3>
+          <p class="test-desc">Click numbers in order</p>
+          <button class="btn btn-primary">Start Test</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cognitive Mini-Game -->
+    <section class="section">
+      <h2 class="section-title">🎮 Brain Exercise</h2>
+      <div class="test-card">
+        <div class="test-icon">🎴</div>
+        <h3 class="test-title">Matching Pairs</h3>
+        <p class="test-desc">Find all matching card pairs</p>
+        <button class="btn btn-primary" id="startMatchingGame">Play Game</button>
+      </div>
+    </section>
+
+    <!-- Functional Task -->
+    <section class="section">
+      <h2 class="section-title">☕ Daily Task Practice</h2>
+      <div class="test-card">
+        <div class="test-icon">🫖</div>
+        <h3 class="test-title">Make a Cup of Tea</h3>
+        <p class="test-desc">Follow the steps in order</p>
+        <button class="btn btn-primary" id="startTeaTask">Start Task</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Test Modals -->
+  <div id="testModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div id="testContent"></div>
+    </div>
+  </div>
+
+  <script src="common.js"></script>
+  <script src="patient.js"></script>
+</body>
+</html>

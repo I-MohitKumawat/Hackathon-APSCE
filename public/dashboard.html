@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caregiver Dashboard - NeuroAssist</title>
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1>🧠 NeuroAssist Dashboard</h1>
+                <p class="header-subtitle">Monitoring <span id="patientName">Patient</span></p>
+            </div>
+            <div class="header-right">
+                <div class="risk-score-badge" id="riskScoreBadge">
+                    <div class="risk-score-value">-</div>
+                    <div class="risk-score-label">Cognitive Stability</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Today's Activity Summary -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Today's Activities</h2>
+                    <span class="card-subtitle" id="todayDate">-</span>
+                </div>
+                <div id="todayActivities">
+                    <div class="loading">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Alerts Panel -->
+            <section class="dashboard-card alerts-card">
+                <div class="card-header">
+                    <h2 class="card-title">🔔 Alerts</h2>
+                    <span class="alert-count" id="alertCount">0</span>
+                </div>
+                <div id="alertsList">
+                    <div class="loading">Loading...</div>
+                </div>
+            </section>
+
+            <!-- 7-Day Cognitive Stability Graph -->
+            <section class="dashboard-card graph-card">
+                <div class="card-header">
+                    <h2 class="card-title">📈 7-Day Cognitive Stability</h2>
+                </div>
+                <canvas id="stabilityChart" width="600" height="300"></canvas>
+            </section>
+
+            <!-- Cognitive Test Performance -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">🧠 Cognitive Test Performance</h2>
+                </div>
+                <div id="testPerformance">
+                    <div class="loading">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Routine Adherence Heatmap -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">📋 Routine Adherence (7 Days)</h2>
+                </div>
+                <div id="routineHeatmap">
+                    <div class="loading">Loading...</div>
+                </div>
+            </section>
+
+            <!-- Functional Task Analysis -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">☕ Functional Task Performance</h2>
+                </div>
+                <div id="functionalTasks">
+                    <div class="loading">Loading...</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+
+</html>

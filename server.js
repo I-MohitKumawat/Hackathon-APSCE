@@ -330,17 +330,147 @@ app.get('/api/dashboard/:userId', (req, res) => {
         const { userId } = req.params;
         const days = parseInt(req.query.days) || 7;
 
-        const data = db.getAllUserData(userId, days);
+        // Get raw data from database
+        const rawData = db.getAllUserData(userId, days);
         const riskScore = calculateRiskScore(userId);
 
-        res.json({
-            ...data,
-            currentRiskScore: riskScore
-        });
+        // Transform to match frontend expectations
+        const dashboardData = {
+            // Risk score (frontend expects 'riskScore' object)
+            riskScore: {
+                score: riskScore?.score || 0,
+                level: riskScore?.status || 'unknown',
+                trend: 'stable' // Can be enhanced later with trend calculation
+            },
+
+            // Today's activities (combine routines + tests from today)
+            todayActivities: getTodayActivities(rawData),
+
+            // Alerts (already correct format)
+            alerts: (rawData.alerts || []).map(alert => ({
+                message: alert.message,
+                severity: alert.priority,
+                timestamp: alert.timestamp
+            })),
+
+            // 7-day stability history (transform risk scores)
+            stabilityHistory: transformStabilityHistory(rawData.riskScores),
+
+            // Test performance (transform cognitive tests)
+            testPerformance: (rawData.cognitiveTests || []).map(test => ({
+                name: test.test_type || test.testType || 'Cognitive Test',
+                score: test.score,
+                maxScore: test.max_score || test.maxScore || 10,
+                timestamp: test.timestamp
+            })),
+
+            // Routine adherence (aggregate by day)
+            routineAdherence: aggregateRoutinesByDay(rawData.routineLogs),
+
+            // Functional tasks (transform to expected format)
+            functionalTasks: (rawData.functionalTasks || []).map(task => ({
+                sequenceCorrect: task.sequence_correct || task.sequenceCorrect,
+                errors: task.errors,
+                timeTaken: task.time_taken || task.timeTaken,
+                timestamp: task.timestamp
+            }))
+        };
+
+        res.json(dashboardData);
     } catch (error) {
+        console.error('Dashboard error:', error);
         res.status(500).json({ error: error.message });
     }
 });
+
+// Helper function: Get today's activities
+function getTodayActivities(rawData) {
+    const today = new Date().toDateString();
+    const activities = [];
+
+    // Add routine logs from today
+    if (rawData.routineLogs) {
+        rawData.routineLogs.forEach(log => {
+            if (new Date(log.timestamp).toDateString() === today) {
+                activities.push({
+                    type: 'routine',
+                    name: log.activity,
+                    timestamp: log.timestamp
+                });
+            }
+        });
+    }
+
+    // Add cognitive tests from today
+    if (rawData.cognitiveTests) {
+        rawData.cognitiveTests.forEach(test => {
+            if (new Date(test.timestamp).toDateString() === today) {
+                activities.push({
+                    type: 'test',
+                    name: test.test_type || test.testType || 'Cognitive Test',
+                    timestamp: test.timestamp
+                });
+            }
+        });
+    }
+
+    return activities.sort((a, b) =>
+        new Date(b.timestamp) - new Date(a.timestamp)
+    );
+}
+
+// Helper function: Transform stability history
+function transformStabilityHistory(riskScores) {
+    const last7Days = [];
+    const today = new Date();
+
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateString = date.toISOString().split('T')[0];
+
+        // Find score for this day
+        const dayScore = riskScores?.find(s =>
+            s.timestamp.startsWith(dateString)
+        );
+
+        last7Days.push({
+            date: dateString,
+            score: dayScore?.score || 5 // Default to mid-range if no data
+        });
+    }
+
+    return last7Days;
+}
+
+// Helper function: Aggregate routines by day
+function aggregateRoutinesByDay(routineLogs) {
+    const last7Days = [];
+    const today = new Date();
+
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateString = date.toISOString().split('T')[0];
+
+        const dayLogs = routineLogs?.filter(log =>
+            log.timestamp.startsWith(dateString)
+        ) || [];
+
+        // Count completed activities (value > 0 or mood exists)
+        const completed = dayLogs.filter(log =>
+            log.value > 0 || log.mood
+        ).length;
+
+        last7Days.push({
+            date: dateString,
+            completed: completed,
+            total: Math.max(dayLogs.length, 1) // Avoid division by zero
+        });
+    }
+
+    return last7Days;
+}
 
 // Get trend analysis (current vs baseline)
 app.get('/api/trend-analysis/:userId', (req, res) => {

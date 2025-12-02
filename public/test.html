@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroAssist - Diagnostic Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        #output {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 NeuroAssist Diagnostic Test</h1>
+
+    <div class="test-section">
+        <h2>1. JavaScript Loading Test</h2>
+        <div id="jsTest" class="status info">Testing...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Common.js Loading Test</h2>
+        <div id="commonTest" class="status info">Testing...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. API Connectivity Test</h2>
+        <button onclick="testAPI()">Test API Connection</button>
+        <div id="apiTest" class="status info">Click button to test</div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Database Test</h2>
+        <button onclick="testDatabase()">Test Database</button>
+        <div id="dbTest" class="status info">Click button to test</div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. User Creation Test</h2>
+        <button onclick="testUserCreation()">Create Test User</button>
+        <div id="userTest" class="status info">Click button to test</div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Console Output</h2>
+        <div id="output"></div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        // Custom console log to display
+        const originalLog = console.log;
+        const originalError = console.error;
+        const output = document.getElementById('output');
+
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            output.textContent += args.join(' ') + '\n';
+        };
+
+        console.error = function (...args) {
+            originalError.apply(console, args);
+            output.textContent += 'ERROR: ' + args.join(' ') + '\n';
+        };
+
+        // Test 1: JavaScript Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const jsTest = document.getElementById('jsTest');
+            jsTest.textContent = '✓ JavaScript is loading and executing';
+            jsTest.className = 'status success';
+            console.log('DOMContentLoaded event fired');
+
+            // Test 2: Common.js loaded
+            const commonTest = document.getElementById('commonTest');
+            if (typeof window.NeuroAssist !== 'undefined') {
+                commonTest.textContent = '✓ Common.js loaded successfully';
+                commonTest.className = 'status success';
+                console.log('NeuroAssist object available:', Object.keys(window.NeuroAssist));
+            } else {
+                commonTest.textContent = '✗ Common.js failed to load';
+                commonTest.className = 'status error';
+                console.error('NeuroAssist object not found');
+            }
+        });
+
+        // Test 3: API Connectivity
+        async function testAPI() {
+            const apiTest = document.getElementById('apiTest');
+            apiTest.textContent = 'Testing...';
+            apiTest.className = 'status info';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/users/test-user-id');
+                console.log('API Response status:', response.status);
+
+                if (response.status === 404) {
+                    apiTest.textContent = '✓ API is responding (404 expected for non-existent user)';
+                    apiTest.className = 'status success';
+                } else {
+                    const data = await response.json();
+                    console.log('API Response:', data);
+                    apiTest.textContent = '✓ API is working: ' + JSON.stringify(data);
+                    apiTest.className = 'status success';
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+                apiTest.textContent = '✗ API Error: ' + error.message;
+                apiTest.className = 'status error';
+            }
+        }
+
+        // Test 4: Database
+        async function testDatabase() {
+            const dbTest = document.getElementById('dbTest');
+            dbTest.textContent = 'Testing...';
+            dbTest.className = 'status info';
+
+            try {
+                // Try to get dashboard data (should fail gracefully)
+                const response = await fetch('http://localhost:3000/api/dashboard/test-user-id');
+                const data = await response.json();
+                console.log('Dashboard response:', data);
+
+                dbTest.textContent = '✓ Database is responding';
+                dbTest.className = 'status success';
+            } catch (error) {
+                console.error('Database test error:', error);
+                dbTest.textContent = '✗ Database error: ' + error.message;
+                dbTest.className = 'status error';
+            }
+        }
+
+        // Test 5: User Creation
+        async function testUserCreation() {
+            const userTest = document.getElementById('userTest');
+            userTest.textContent = 'Creating test user...';
+            userTest.className = 'status info';
+
+            try {
+                const { api } = window.NeuroAssist;
+                const user = await api.post('/users', {
+                    name: 'Test Patient ' + Date.now(),
+                    role: 'patient'
+                });
+
+                console.log('User created:', user);
+                userTest.textContent = '✓ User created successfully: ' + user.name + ' (ID: ' + user.id + ')';
+                userTest.className = 'status success';
+            } catch (error) {
+                console.error('User creation error:', error);
+                userTest.textContent = '✗ Error: ' + error.message;
+                userTest.className = 'status error';
+            }
+        }
+    </script>
+</body>
+
+</html>

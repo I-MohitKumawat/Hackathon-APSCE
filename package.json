@@ -7,13 +7,19 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "keywords": ["cognitive", "dementia", "monitoring", "healthcare"],
+  "keywords": [
+    "cognitive",
+    "dementia",
+    "monitoring",
+    "healthcare"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
+    "better-sqlite3": "^12.5.0",
     "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "uuid": "^9.0.0"
   }
 }

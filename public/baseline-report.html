@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baseline Report - NeuroAssist</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        body {
+            background: var(--neutral-100);
+        }
+
+        .report-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--spacing-8);
+        }
+
+        .report-header {
+            background: white;
+            padding: var(--spacing-8);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-6);
+            text-align: center;
+        }
+
+        .report-card {
+            background: white;
+            padding: var(--spacing-8);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-6);
+        }
+
+        .score-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-4);
+            margin: var(--spacing-6) 0;
+        }
+
+        .score-box {
+            text-align: center;
+            padding: var(--spacing-5);
+            background: var(--neutral-50);
+            border-radius: var(--radius-lg);
+        }
+
+        .score-value {
+            font-size: var(--font-size-4xl);
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .score-label {
+            font-size: var(--font-size-sm);
+            color: var(--neutral-600);
+            margin-top: var(--spacing-2);
+        }
+
+        .component-breakdown {
+            display: grid;
+            gap: var(--spacing-3);
+        }
+
+        .component-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-4);
+            background: var(--neutral-50);
+            border-radius: var(--radius-md);
+        }
+
+        .recommendations {
+            margin-top: var(--spacing-6);
+        }
+
+        .recommendations ul {
+            margin-top: var(--spacing-4);
+            padding-left: var(--spacing-6);
+        }
+
+        .recommendations li {
+            margin: var(--spacing-2) 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <h1>📋 Baseline Assessment Report</h1>
+            <p id="patientName" class="text-lg text-neutral-600"></p>
+            <p id="assessmentDate" class="text-sm text-neutral-500"></p>
+        </div>
+
+        <div class="report-card">
+            <h2>Overall Score</h2>
+            <div class="score-summary">
+                <div class="score-box">
+                    <div class="score-value" id="totalScore">--</div>
+                    <div class="score-label">Total Score (0-15)</div>
+                </div>
+                <div class="score-box">
+                    <div class="score-value" id="cognitiveScore">--</div>
+                    <div class="score-label">Cognitive (0-10)</div>
+                </div>
+                <div class="score-box">
+                    <div class="score-value" id="functionalScore">--</div>
+                    <div class="score-label">Functional (0-5)</div>
+                </div>
+            </div>
+
+            <div id="riskLevel" class="status-badge"
+                style="margin: var(--spacing-6) auto; display: block; width: fit-content;"></div>
+        </div>
+
+        <div class="report-card">
+            <h2>Component Breakdown</h2>
+            <div class="component-breakdown">
+                <div class="component-item">
+                    <span>Orientation Test</span>
+                    <span id="orientationScore" class="font-semibold">-- / 3</span>
+                </div>
+                <div class="component-item">
+                    <span>Memory Recall</span>
+                    <span id="recallScore" class="font-semibold">-- / 5</span>
+                </div>
+                <div class="component-item">
+                    <span>Trail-Making Test</span>
+                    <span id="trailScore" class="font-semibold">-- / 2</span>
+                </div>
+                <div class="component-item">
+                    <span>Functional Task (Tea-Making)</span>
+                    <span id="teaScore" class="font-semibold">-- / 5</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="report-card">
+            <h2>Interpretation</h2>
+            <div id="interpretation" class="text-neutral-700"></div>
+        </div>
+
+        <div class="report-card">
+            <div class="recommendations">
+                <h2>Recommendations</h2>
+                <ul id="recommendationsList"></ul>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--spacing-8);">
+            <a href="/patient.html" class="btn btn-primary">Go to Patient Interface</a>
+            <a href="/dashboard.html" class="btn btn-outline" style="margin-left: var(--spacing-4);">View Dashboard</a>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        const { api, formatDate, getCurrentUser } = NeuroAssist;
+
+        async function loadReport() {
+            try {
+                const user = getCurrentUser();
+                if (!user) {
+                    window.location.href = '/onboarding.html';
+                    return;
+                }
+
+                // Load baseline assessment
+                const report = await api.get(`/baseline-report/${user.id}`);
+
+                // Display user info
+                document.getElementById('patientName').textContent = user.name;
+                document.getElementById('assessmentDate').textContent = `Assessed on ${formatDate(report.baseline.timestamp)}`;
+
+                // Display scores
+                document.getElementById('totalScore').textContent = report.baseline.total_score;
+                document.getElementById('cognitiveScore').textContent = report.baseline.cognitive_score;
+                document.getElementById('functionalScore').textContent = report.baseline.functional_score;
+
+                // Display components
+                const components = JSON.parse(report.baseline.components);
+                document.getElementById('orientationScore').textContent = `${components.orientation || 0} / 3`;
+                document.getElementById('recallScore').textContent = `${components.recall || 0} / 5`;
+                document.getElementById('trailScore').textContent = `${components.trail || 0} / 2`;
+                document.getElementById('teaScore').textContent = `${components.teaTask || 0} / 5`;
+
+                // Display risk level
+                const riskBadge = document.getElementById('riskLevel');
+                const risk = report.baseline.risk_level;
+                riskBadge.className = `status-badge status-${risk === 'normal' ? 'green' : risk === 'mild' ? 'amber' : 'red'}`;
+
+                if (risk === 'normal') {
+                    riskBadge.innerHTML = '<span class="status-dot"></span> Normal - No Impairment Detected';
+                } else if (risk === 'mild') {
+                    riskBadge.innerHTML = '<span class="status-dot"></span> Mild Concern - Monitor Closely';
+                } else {
+                    riskBadge.innerHTML = '<span class="status-dot"></span> High Priority - Consultation Recommended';
+                }
+
+                // Display interpretation
+                document.getElementById('interpretation').innerHTML = `<p>${report.interpretation}</p>`;
+
+                // Display recommendations
+                const recList = document.getElementById('recommendationsList');
+                report.recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.textContent = rec;
+                    recList.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error('Error loading report:', error);
+                if (error.message.includes('No baseline assessment')) {
+                    window.location.href = '/onboarding.html';
+                }
+            }
+        }
+
+        loadReport();
+    </script>
+</body>
+
+</html>

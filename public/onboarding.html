@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baseline Assessment - NeuroAssist</title>
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="onboarding.css">
+</head>
+<body>
+  <div class="onboarding-container">
+    <!-- Welcome Screen -->
+    <div id="welcome" class="onboarding-step active">
+      <div class="welcome-content">
+        <h1>🧠 Welcome to NeuroAssist</h1>
+        <p class="subtitle">Let's establish your cognitive baseline</p>
+        <div class="info-card">
+          <h3>What is a baseline assessment?</h3>
+          <p>We'll guide you through a brief series of activities to understand your current cognitive and functional abilities. This one-time assessment helps us:</p>
+          <ul>
+            <li>Identify your current cognitive health status</li>
+            <li>Track changes over time</li>
+            <li>Provide personalized monitoring</li>
+          </ul>
+          <p class="duration"><strong>Time needed:</strong> Approximately 10-15 minutes</p>
+        </div>
+        <button class="btn btn-primary btn-large" onclick="startAssessment()">Begin Assessment</button>
+      </div>
+    </div>
+
+    <!-- Step 1: Orientation Test -->
+    <div id="step1" class="onboarding-step">
+      <div class="step-header">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 25%"></div>
+        </div>
+        <h2>Part 1 of 4: Orientation</h2>
+        <p class="step-description">Answer these simple questions about today</p>
+      </div>
+      <div id="orientationTest"></div>
+    </div>
+
+    <!-- Step 2: Memory Recall -->
+    <div id="step2" class="onboarding-step">
+      <div class="step-header">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 50%"></div>
+        </div>
+        <h2>Part 2 of 4: Memory Recall</h2>
+        <p class="step-description">Remember these words for a short time</p>
+      </div>
+      <div id="recallTest"></div>
+    </div>
+
+    <!-- Step 3: Trail Making -->
+    <div id="step3" class="onboarding-step">
+      <div class="step-header">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 75%"></div>
+        </div>
+        <h2>Part 3 of 4: Number Trail</h2>
+        <p class="step-description">Click the numbers in order as quickly as you can</p>
+      </div>
+      <div id="trailTest"></div>
+    </div>
+
+    <!-- Step 4: Functional Task -->
+    <div id="step4" class="onboarding-step">
+      <div class="step-header">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 100%"></div>
+        </div>
+        <h2>Part 4 of 4: Daily Task Simulation</h2>
+        <p class="step-description">Complete the steps to make a cup of tea</p>
+      </div>
+      <div id="functionalTest"></div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results" class="onboarding-step">
+      <div class="results-content">
+        <h1>✓ Assessment Complete</h1>
+        <div class="score-display">
+          <div class="score-circle">
+            <span id="totalScore">--</span>
+            <span class="score-label">/15</span>
+          </div>
+          <div id="riskLevel" class="risk-badge">--</div>
+        </div>
+        
+        <div class="score-breakdown">
+          <h3>Score Breakdown</h3>
+          <div class="breakdown-item">
+            <span>Cognitive Assessment</span>
+            <span id="cognitiveScore">-- / 10</span>
+          </div>
+          <div class="breakdown-item">
+            <span>Functional Assessment</span>
+            <span id="functionalScore">-- / 5</span>
+          </div>
+        </div>
+
+        <div id="interpretation" class="interpretation-card"></div>
+
+        <button class="btn btn-primary btn-large" onclick="completeOnboarding()">Continue to Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="common.js"></script>
+  <script src="onboarding.js"></script>
+</body>
+</html>

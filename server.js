@@ -1,15 +1,18 @@
 /**
- * NeuroAssist Backend Server
+ * NeuroAssist Backend Server with SQLite
  * Express.js API for cognitive monitoring platform
  */
 
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const store = require('./data-store');
+const db = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize database
+db.initDatabase();
 
 // Middleware
 app.use(cors());
@@ -29,7 +32,7 @@ app.post('/api/users', (req, res) => {
             return res.status(400).json({ error: 'Name and role are required' });
         }
 
-        const user = store.createUser({ name, role, dateOfBirth, caregiverId });
+        const user = db.createUser({ name, role, dateOfBirth, caregiverId });
         res.status(201).json(user);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -40,7 +43,7 @@ app.post('/api/users', (req, res) => {
 app.post('/api/login', (req, res) => {
     try {
         const { name } = req.body;
-        const users = store.dataStore ? store.dataStore.users : [];
+        const users = db.getAllUsers();
         const user = users.find(u => u.name.toLowerCase() === name.toLowerCase());
 
         if (!user) {
@@ -48,6 +51,113 @@ app.post('/api/login', (req, res) => {
         }
 
         res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get user by ID
+app.get('/api/users/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = db.getUserById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================
+// BASELINE ASSESSMENT ENDPOINTS
+// ============================================
+
+// Submit baseline assessment
+app.post('/api/baseline-assessment', (req, res) => {
+    try {
+        const { userId, cognitiveScore, functionalScore, totalScore, riskLevel, components } = req.body;
+
+        if (!userId || cognitiveScore === undefined || functionalScore === undefined) {
+            return res.status(400).json({ error: 'UserId, cognitiveScore, and functionalScore are required' });
+        }
+
+        const baseline = db.insertBaselineAssessment({
+            userId,
+            cognitiveScore,
+            functionalScore,
+            totalScore,
+            riskLevel,
+            components
+        });
+
+        res.status(201).json(baseline);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get baseline assessment for user
+app.get('/api/baseline-assessment/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const baseline = db.getBaselineByUserId(userId);
+
+        if (!baseline) {
+            return res.status(404).json({ error: 'No baseline assessment found' });
+        }
+
+        res.json(baseline);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get baseline report with recommendations
+app.get('/api/baseline-report/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const baseline = db.getBaselineByUserId(userId);
+
+        if (!baseline) {
+            return res.status(404).json({ error: 'No baseline assessment found' });
+        }
+
+        // Generate recommendations based on risk level
+        let recommendations = [];
+        if (baseline.risk_level === 'normal') {
+            recommendations = [
+                'Continue regular cognitive monitoring (weekly tests)',
+                'Maintain healthy lifestyle with regular exercise',
+                'Engage in mentally stimulating activities',
+                'Schedule annual cognitive check-ups'
+            ];
+        } else if (baseline.risk_level === 'mild') {
+            recommendations = [
+                'Complete cognitive tests twice weekly',
+                'Engage in daily cognitive exercises',
+                'Consider consultation with healthcare provider',
+                'Monitor for any changes in daily routines',
+                'Maintain social engagement and activities'
+            ];
+        } else { // high
+            recommendations = [
+                'Medical consultation strongly recommended',
+                'Complete daily cognitive monitoring',
+                'Caregiver should monitor closely',
+                'Consider comprehensive neurological evaluation',
+                'Maintain structured daily routine'
+            ];
+        }
+
+        res.json({
+            baseline,
+            recommendations,
+            interpretation: getRiskLevelInterpretation(baseline.risk_level, baseline.total_score)
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -66,7 +176,7 @@ app.post('/api/routine-log', (req, res) => {
             return res.status(400).json({ error: 'UserId and activity are required' });
         }
 
-        const log = store.addRoutineLog({ userId, activity, value, mood });
+        const log = db.insertRoutineLog({ userId, activity, value, mood });
 
         // Check for alert conditions
         checkRoutineAlerts(userId);
@@ -83,7 +193,7 @@ app.get('/api/routine-log/:userId', (req, res) => {
         const { userId } = req.params;
         const days = parseInt(req.query.days) || 7;
 
-        const logs = store.getRoutineLogsByUser(userId, days);
+        const logs = db.getRoutineLogs(userId, days);
         res.json(logs);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -103,7 +213,7 @@ app.post('/api/cognitive-test', (req, res) => {
             return res.status(400).json({ error: 'UserId, testType, and score are required' });
         }
 
-        const test = store.addCognitiveTest({
+        const test = db.insertCognitiveTest({
             userId,
             testType,
             score,
@@ -114,6 +224,9 @@ app.post('/api/cognitive-test', (req, res) => {
 
         // Check for cognitive decline alerts
         checkCognitiveAlerts(userId, testType, score, maxScore);
+
+        // Check for decline vs baseline
+        checkBaselineDecline(userId);
 
         res.status(201).json(test);
     } catch (error) {
@@ -127,7 +240,7 @@ app.get('/api/cognitive-test/:userId', (req, res) => {
         const { userId } = req.params;
         const days = parseInt(req.query.days) || 7;
 
-        const tests = store.getCognitiveTestsByUser(userId, days);
+        const tests = db.getCognitiveTests(userId, days);
         res.json(tests);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -147,7 +260,7 @@ app.post('/api/functional-task', (req, res) => {
             return res.status(400).json({ error: 'UserId and taskType are required' });
         }
 
-        const task = store.addFunctionalTask({
+        const task = db.insertFunctionalTask({
             userId,
             taskType,
             completed,
@@ -159,7 +272,7 @@ app.post('/api/functional-task', (req, res) => {
 
         // Check for functional task alerts
         if (!sequenceCorrect || errors > 2) {
-            store.createAlert({
+            db.insertAlert({
                 userId,
                 type: 'functional_task',
                 priority: 'high',
@@ -180,7 +293,7 @@ app.get('/api/functional-task/:userId', (req, res) => {
         const { userId } = req.params;
         const days = parseInt(req.query.days) || 7;
 
-        const tasks = store.getFunctionalTasksByUser(userId, days);
+        const tasks = db.getFunctionalTasks(userId, days);
         res.json(tasks);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -198,7 +311,7 @@ app.get('/api/risk-score/:userId', (req, res) => {
         const riskScore = calculateRiskScore(userId);
 
         // Save the calculated score
-        store.addRiskScore({
+        db.insertRiskScore({
             userId,
             score: riskScore.score,
             status: riskScore.status,
@@ -217,7 +330,7 @@ app.get('/api/dashboard/:userId', (req, res) => {
         const { userId } = req.params;
         const days = parseInt(req.query.days) || 7;
 
-        const data = store.getAllUserData(userId, days);
+        const data = db.getAllUserData(userId, days);
         const riskScore = calculateRiskScore(userId);
 
         res.json({
@@ -229,13 +342,32 @@ app.get('/api/dashboard/:userId', (req, res) => {
     }
 });
 
+// Get trend analysis (current vs baseline)
+app.get('/api/trend-analysis/:userId', (req, res) => {
+    try {
+        const { userId } = req.params;
+        const baseline = db.getBaselineByUserId(userId);
+
+        if (!baseline) {
+            return res.status(404).json({ error: 'No baseline assessment found' });
+        }
+
+        const recentTests = db.getCognitiveTests(userId, 7);
+        const trendAnalysis = calculateTrendAnalysis(baseline, recentTests);
+
+        res.json(trendAnalysis);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Get alerts
 app.get('/api/alerts/:userId', (req, res) => {
     try {
         const { userId } = req.params;
         const unreadOnly = req.query.unreadOnly === 'true';
 
-        const alerts = store.getAlertsByUser(userId, unreadOnly);
+        const alerts = db.getAlerts(userId, unreadOnly);
         res.json(alerts);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -246,7 +378,7 @@ app.get('/api/alerts/:userId', (req, res) => {
 app.patch('/api/alerts/:alertId/read', (req, res) => {
     try {
         const { alertId } = req.params;
-        const alert = store.markAlertAsRead(alertId);
+        const alert = db.markAlertAsRead(alertId);
 
         if (!alert) {
             return res.status(404).json({ error: 'Alert not found' });
@@ -269,13 +401,14 @@ function calculateRiskScore(userId) {
         abnormalFunctionalTasks: 0,
         lowMemoryRecall: 0,
         slowTrailMaking: 0,
-        negativeMoodDays: 0
+        negativeMoodDays: 0,
+        trendFactor: 0
     };
 
     // Get last 7 days of data
-    const routineLogs = store.getRoutineLogsByUser(userId, 7);
-    const cognitiveTests = store.getCognitiveTestsByUser(userId, 7);
-    const functionalTasks = store.getFunctionalTasksByUser(userId, 7);
+    const routineLogs = db.getRoutineLogs(userId, 7);
+    const cognitiveTests = db.getCognitiveTests(userId, 7);
+    const functionalTasks = db.getFunctionalTasks(userId, 7);
 
     // 1. Check missed medications (last 7 days)
     const medicationLogs = routineLogs.filter(log => log.activity === 'medication');
@@ -315,6 +448,28 @@ function calculateRiskScore(userId) {
     breakdown.negativeMoodDays = negativeDays;
     score -= negativeDays * 1;
 
+    // 6. Check trend vs baseline
+    const baseline = db.getBaselineByUserId(userId);
+    if (baseline && cognitiveTests.length > 0) {
+        const baselineCognitivePercent = (baseline.cognitive_score / 10) * 100;
+
+        // Calculate recent average
+        const totalRecentScore = cognitiveTests.reduce((sum, test) => {
+            return sum + (test.score / test.maxScore) * 100;
+        }, 0);
+        const recentAvgPercent = totalRecentScore / cognitiveTests.length;
+
+        const decline = baselineCognitivePercent - recentAvgPercent;
+
+        if (decline > 20) {
+            breakdown.trendFactor = -2; // Significant decline
+            score -= 2;
+        } else if (decline > 10) {
+            breakdown.trendFactor = -1; // Mild decline
+            score -= 1;
+        }
+    }
+
     // Ensure score is between 0-10
     score = Math.max(0, Math.min(10, score));
 
@@ -332,11 +487,67 @@ function calculateRiskScore(userId) {
 }
 
 // ============================================
+// TREND ANALYSIS
+// ============================================
+
+function calculateTrendAnalysis(baseline, recentTests) {
+    if (!baseline || recentTests.length === 0) {
+        return {
+            hasBaseline: false,
+            message: 'Insufficient data for trend analysis'
+        };
+    }
+
+    const baselineCognitiveScore = baseline.cognitive_score;
+
+    // Calculate recent average by test type
+    const testsByType = {};
+    recentTests.forEach(test => {
+        if (!testsByType[test.testType]) {
+            testsByType[test.testType] = [];
+        }
+        testsByType[test.testType].push(test);
+    });
+
+    const trends = {};
+    Object.keys(testsByType).forEach(testType => {
+        const tests = testsByType[testType];
+        const recentAvg = tests.reduce((sum, t) => sum + (t.score / t.maxScore) * 100, 0) / tests.length;
+
+        // Get baseline component score
+        const baselineComponents = baseline.components;
+        let baselineScore = 0;
+        if (testType === 'orientation' && baselineComponents.orientation) {
+            baselineScore = (baselineComponents.orientation / 3) * 100;
+        } else if (testType === 'recall' && baselineComponents.recall) {
+            baselineScore = (baselineComponents.recall / 5) * 100;
+        } else if (testType === 'trail-making' && baselineComponents.trail) {
+            baselineScore = (baselineComponents.trail / 2) * 100;
+        }
+
+        const change = recentAvg - baselineScore;
+        trends[testType] = {
+            baseline: baselineScore.toFixed(1),
+            current: recentAvg.toFixed(1),
+            change: change.toFixed(1),
+            direction: change > 10 ? 'improving' : change < -10 ? 'declining' : 'stable'
+        };
+    });
+
+    return {
+        hasBaseline: true,
+        baselineDate: baseline.timestamp,
+        baselineScore: baselineCognitiveScore,
+        trends
+    };
+}
+
+// ============================================
 // ALERT GENERATION LOGIC
 // ============================================
 
 function checkRoutineAlerts(userId) {
-    const logs = store.getRoutineLogsByUser(userId, 7);
+    const logs = db.getRoutineLogs(userId, 7);
 
     // Check for consecutive missed medications
     const today = new Date().toDateString();
@@ -348,7 +559,7 @@ function checkRoutineAlerts(userId) {
     if (todayMeds.length === 0) {
         const hour = new Date().getHours();
         if (hour >= 18) { // After 6 PM
-            store.createAlert({
+            db.insertAlert({
                 userId,
                 type: 'routine',
                 priority: 'high',
@@ -360,7 +571,7 @@ function checkRoutineAlerts(userId) {
     // Check for negative mood patterns
     const recentMoodLogs = logs.filter(log => log.mood === 'confused').slice(0, 3);
     if (recentMoodLogs.length === 3) {
-        store.createAlert({
+        db.insertAlert({
             userId,
             type: 'mood',
             priority: 'medium',
@@ -373,7 +584,7 @@ function checkCognitiveAlerts(userId, testType, score, maxScore) {
     const percentage = (score / maxScore) * 100;
 
     if (percentage < 40) {
-        store.createAlert({
+        db.insertAlert({
             userId,
             type: 'cognitive',
             priority: 'high',
@@ -381,13 +592,47 @@ function checkCognitiveAlerts(userId, testType, score, maxScore) {
             data: { testType, score, maxScore }
         });
     } else if (percentage < 60) {
-        store.createAlert({
+        db.insertAlert({
             userId,
             type: 'cognitive',
             priority: 'medium',
             message: `Below average score on ${testType} test: ${score}/${maxScore}`,
             data: { testType, score, maxScore }
         });
+    }
+}
+
+function checkBaselineDecline(userId) {
+    const baseline = db.getBaselineByUserId(userId);
+    if (!baseline) return;
+
+    const recentTests = db.getCognitiveTests(userId, 7);
+    if (recentTests.length === 0) return;
+
+    const trendAnalysis = calculateTrendAnalysis(baseline, recentTests);
+
+    // Check for significant decline in any test type
+    Object.keys(trendAnalysis.trends || {}).forEach(testType => {
+        const trend = trendAnalysis.trends[testType];
+        if (trend.direction === 'declining' && parseFloat(trend.change) < -15) {
+            db.insertAlert({
+                userId,
+                type: 'trend',
+                priority: 'high',
+                message: `Significant decline detected in ${testType} test (${trend.change}% from baseline)`,
+                data: { testType, ...trend }
+            });
+        }
+    });
+}
+
+function getRiskLevelInterpretation(riskLevel, totalScore) {
+    if (riskLevel === 'normal') {
+        return `Score: ${totalScore}/15 - No cognitive impairment detected. Continue regular monitoring.`;
+    } else if (riskLevel === 'mild') {
+        return `Score: ${totalScore}/15 - Mild Cognitive Impairment (MCI) indicators. Increased monitoring recommended.`;
+    } else {
+        return `Score: ${totalScore}/15 - Early dementia indicators detected. Medical consultation recommended.`;
     }
 }
 
@@ -398,15 +643,18 @@ function checkCognitiveAlerts(userId, testType, score, maxScore) {
 app.listen(PORT, () => {
     console.log(`✅ NeuroAssist server running on http://localhost:${PORT}`);
     console.log(`📊 API endpoints ready at http://localhost:${PORT}/api/`);
+    console.log(`💾 Database: SQLite persistent storage`);
 
-    // Create demo user
-    const demoUser = store.createUser({
-        name: 'John Doe',
-        role: 'patient',
-        dateOfBirth: '1945-03-15'
-    });
-    console.log(`👤 Demo user created: ${demoUser.name} (ID: ${demoUser.id})`);
+    // Create demo user if database is empty
+    const users = db.getAllUsers();
+    if (users.length === 0) {
+        const demoUser = db.createUser({
+            name: 'John Doe',
+            role: 'patient',
+            dateOfBirth: '1945-03-15'
+        });
+        console.log(`👤 Demo user created: ${demoUser.name} (ID: ${demoUser.id})`);
+    } else {
+        console.log(`👤 Found ${users.length} existing user(s) in database`);
+    }
 });
-
-// Make dataStore accessible for login endpoint
-store.dataStore = require('./data-store.js');
